@@ -45,6 +45,7 @@ namespace ns3 {
       Time nextPolicyUpdate;
       Time prevRTT;
       uint32_t prevOutstandingPackets;
+      uint32_t nPacketsAcked;
 
 
 

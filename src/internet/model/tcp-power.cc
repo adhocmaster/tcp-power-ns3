@@ -28,7 +28,8 @@ namespace ns3 {
       lastPolicyUpdated(Time::Min()),
       nextPolicyUpdate(Time::Min()),
       prevRTT(Time::Max()),
-      prevOutstandingPackets(0) {
+      prevOutstandingPackets(0),
+      nPacketsAcked(0) {
 
       id = TcpPW::nextId;
       TcpPW::nextId++;
@@ -44,7 +45,8 @@ namespace ns3 {
       lastPolicyUpdated(sock.lastPolicyUpdated),
       nextPolicyUpdate(sock.nextPolicyUpdate),
       prevRTT(sock.prevRTT),
-      prevOutstandingPackets(sock.prevOutstandingPackets)
+      prevOutstandingPackets(sock.prevOutstandingPackets),
+      nPacketsAcked(sock.nPacketsAcked)
   {
     NS_LOG_FUNCTION (this);
   }
@@ -143,12 +145,14 @@ namespace ns3 {
   TcpPW::PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,
                                const Time& rtt)
   {
+    nPacketsAcked += segmentsAcked;
     ++rttCount;
     currentRTT = rtt;
     uint32_t outstandingPacketsBeforePolicyUpdate = tcb->GetCwndInSegments(); // because this is volatile in this block
 
     NS_LOG_FUNCTION (this << tcb << segmentsAcked << rtt);
-    NS_LOG_INFO("Client " << id << " packet acked = " << rttCount);
+    NS_LOG_INFO("Client " << id << " nPacketsAcked = " << nPacketsAcked);
+    NS_LOG_INFO("Client " << id << " rttCount = " << rttCount);
     NS_LOG_INFO("Client " << id << " currentRTT = " << currentRTT.GetMilliSeconds() << "ms");
     //NS_LOG_INFO("Client " << id << " m_segmentSize = " << tcb->m_segmentSize);
     //NS_LOG_INFO("Client " << id << " cwndWindow = " << tcb->m_cWnd.Get());
