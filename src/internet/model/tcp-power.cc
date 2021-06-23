@@ -69,7 +69,7 @@ namespace ns3 {
 
   uint32_t TcpPW::GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) {
     NS_LOG_FUNCTION(this << tcb << bytesInFlight);
-    NS_LOG_INFO(this << " Ignored. Returning max (65535).");
+    // NS_LOG_INFO(this << " Ignored. Returning max (65535).");
     return 65535;
   }
 
@@ -77,7 +77,7 @@ namespace ns3 {
   TcpPW::IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
   {
     NS_LOG_FUNCTION (this << tcb << segmentsAcked);
-    NS_LOG_INFO(this << " Ignored.");
+    // NS_LOG_INFO(this << " Ignored.");
   }
 
 
@@ -85,7 +85,7 @@ namespace ns3 {
   TcpPW::ReduceCwnd (Ptr<TcpSocketState> tcb)
   {
     NS_LOG_FUNCTION (this << tcb);
-    NS_LOG_INFO(this << " Ignored.");
+    // NS_LOG_INFO(this << " Ignored.");
   }
 
   void
@@ -93,7 +93,7 @@ namespace ns3 {
                                const TcpSocketState::TcpCongState_t newState)
   {
     NS_LOG_FUNCTION (this << tcb << newState);
-    NS_LOG_INFO(this << " Ignored.");
+    // NS_LOG_INFO(this << " Ignored.");
   }
 
   double TcpPW::getPreviousPower() {
@@ -115,7 +115,31 @@ namespace ns3 {
 
       double currentPower = getPower(tcb);
 
-      return (currentPower - prevPower); // percentage change is needed.
+      double diff = (currentPower - prevPower); // percentage change is needed.
+
+      return diff;
+      // Now why is the diff
+
+      // if (diff < 0) {
+      //   // Is it due to the change in number of outstandingpackets or change in rtt
+      //   // if changeInOP > changeInRTT ** 2, false alarm ?
+      //
+      //   double changeInOP = (prevOutstandingPackets - tcb->GetCwndInSegments()) / prevOutstandingPackets;
+      //   double changeInRTT = abs(currentRTT.GetSeconds() -  prevRTT.GetSeconds()) / prevRTT.GetSeconds();
+      //
+      //   if (changeInOP >  changeInRTT) {
+      //       NS_LOG_INFO("False decreasing alarm");
+      //       return 1.0;
+      //   }
+      //
+      //   return diff;
+      //
+      // } else if (diff > 0) {
+      //
+      //   // if changeInOP < changeInRTT ** 2, false alarm ?
+      //   return diff;
+      //
+      // }
 
     }
     return 0.0;
@@ -151,21 +175,21 @@ namespace ns3 {
     uint32_t outstandingPacketsBeforePolicyUpdate = tcb->GetCwndInSegments(); // because this is volatile in this block
 
     NS_LOG_FUNCTION (this << tcb << segmentsAcked << rtt);
-    NS_LOG_INFO("Client " << id << " nPacketsAcked = " << nPacketsAcked);
-    NS_LOG_INFO("Client " << id << " rttCount = " << rttCount);
-    NS_LOG_INFO("Client " << id << " currentRTT = " << currentRTT.GetMilliSeconds() << "ms");
-    //NS_LOG_INFO("Client " << id << " m_segmentSize = " << tcb->m_segmentSize);
-    //NS_LOG_INFO("Client " << id << " cwndWindow = " << tcb->m_cWnd.Get());
-    NS_LOG_INFO("Client " << id << " outstandingPacketsBeforePolicyUpdate = " << outstandingPacketsBeforePolicyUpdate);
-    NS_LOG_INFO("Client " << id << " prevRTT = " << prevRTT.GetMilliSeconds() << "ms");
-    NS_LOG_INFO("Client " << id << " prevOutstandingPackets = " << prevOutstandingPackets);
-    NS_LOG_INFO("Client " << id << " nextPolicyUpdate = " << nextPolicyUpdate.GetMilliSeconds() << "ms");
 
     // current power = outstandingPacketsBeforePolicyUpdate / currentRTT ** 2
     // previous power = previousPreviousOutstandingPackets / prevRTT
 
     // check if we need to update policity
     if (nextPolicyUpdate < Simulator::Now()) {
+      NS_LOG_INFO("Client " << id << " nPacketsAcked = " << nPacketsAcked);
+      NS_LOG_INFO("Client " << id << " rttCount = " << rttCount);
+      NS_LOG_INFO("Client " << id << " currentRTT = " << currentRTT.GetMilliSeconds() << "ms");
+      //NS_LOG_INFO("Client " << id << " m_segmentSize = " << tcb->m_segmentSize);
+      //NS_LOG_INFO("Client " << id << " cwndWindow = " << tcb->m_cWnd.Get());
+      NS_LOG_INFO("Client " << id << " outstandingPacketsBeforePolicyUpdate = " << outstandingPacketsBeforePolicyUpdate);
+      NS_LOG_INFO("Client " << id << " prevRTT = " << prevRTT.GetMilliSeconds() << "ms");
+      NS_LOG_INFO("Client " << id << " prevOutstandingPackets = " << prevOutstandingPackets);
+      // NS_LOG_INFO("Client " << id << " nextPolicyUpdate = " << nextPolicyUpdate.GetMilliSeconds() << "ms");
       // Do update
       double trend = powerTrend(tcb);
       NS_LOG_INFO("Client " << id << " powerTrend = " << trend);
@@ -202,7 +226,7 @@ namespace ns3 {
       }
 
       NS_LOG_INFO("Client " << id << " policy updated");
-      nextPolicyUpdate = Simulator::Now() + rtt;
+      nextPolicyUpdate = Simulator::Now() + rtt + rtt;
       NS_LOG_INFO("Client " << id << " nextPolicyUpdate = " << nextPolicyUpdate.GetMilliSeconds() << "ms");
 
       prevOutstandingPackets = outstandingPacketsBeforePolicyUpdate;
